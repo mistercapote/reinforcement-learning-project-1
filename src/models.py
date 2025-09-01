@@ -69,8 +69,15 @@ class Game():
         Returns:
             tuple[State, int]: o novo estado e a recompensa da ação
         """
+        
+        if state not in [self.low, self.high]:
+            raise ValueError("Estado inválido!") 
+        if  action not in [self.wait, self.recharge, self.search]:
+            raise ValueError("Ação inválida!")
+        
         new_state = None
         reward = 0
+        
         # Se ele busca
         if action == self.search:
             reward = self.r_search
@@ -102,24 +109,22 @@ class Game():
         """Retorna as ações possiveis dado o estado atual
 
         Args:
-            state (State): estado atual
+            state (State): Estado atual
 
         Returns:
             list[Action]: Lista com as ações possiveis
         """
         possible_actions = []
+        if state not in [self.high, self.low]:
+            raise ValueError("Estato inválido!")
         
-        # Se a bateria estiver cheia, pode procurar ou esperar
-        if state == self.high:
-            
-            possible_actions.append(self.search)
-            possible_actions.append(self.wait)
+        # Se a bateria estiver  baixa ou cheia, pode procurar ou esperar
+        possible_actions.append(self.search)
+        possible_actions.append(self.wait)
         
         # Se a bateria estiver baixa, pode procurar,  esperar ou recarregar
-        elif state== self.low:
-            possible_actions.append(self.search)
+        if state== self.low:
             possible_actions.append(self.recharge)
-            possible_actions.append(self.wait)
         
         return possible_actions 
         
