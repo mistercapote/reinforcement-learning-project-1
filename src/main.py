@@ -1,75 +1,72 @@
 import numpy as np
+from models import *
+from plot import *
 
-
-class State():
-    def __init__(self):
-        pass
-
-
-class Game():
-    # Não tem como finalizar o jogo, só acaba quando terminam as epochs
-    #  r_search > r_wait
-    # Tanto faz se ele encontrar ou não na busca, ele recebe a recompensa  de r_wait 
-    def __init__(self,player,  r_search: float, r_wait: float, alpha: float, beta:float):
-        self.player = player # só tem um jogador 
-        self.r_search = r_search
-        self.r_wait = r_wait
-        self.alpha = alpha
-        self.beta = beta
-        self.high = State(1)
-        self.low = State(0)
-        
-    def reset(self):
-        self.player.reset()
-        
-        
+def train(epochs, steps_per_epoch, r_search, r_wait, alpha, beta, print_every_n=1000):
+    player = Player(step_size=0.1, epsilon=0.1)
+    game = Game(player, r_search, r_wait, alpha, beta)
+    total_rewards = []
     
-    def transition(self, state, action ):
-        # Vai ser 1 se tiver high 0 se tiver low
+    for i in range(1, epochs+1):
+        player.reset()
+        current_state = Game.high
+        player.add_state(current_state)
+        episode_reward = 0
         
-        new_state = None
-        # Recompensa
+        for _ in range(steps_per_epoch):
+            new_state, reward = game.transition(current_state, player.set_action())
+            player.add_state(new_state)
+            player.backup(reward, new_state)
+            episode_reward += reward
+            current_state = new_state
+            
+        total_rewards.append(episode_reward)
         
-        reward = 0 # 5  se for busca e 3 se esperar
-        #  Se ta high
-        if state == self.high:
-            #  Se ele busca
-            if action== "search":
-                reward = self.r_search
-                if np.random.random.random() <= self.alpha:
-                    
-                    new_state = self.high
-                else:
-                
-                    new_state= self.low
-            elif  action == "wait":
-                new_state = self.high
-                reward = self.r_wait
-            
-                
-        if state ==self.low:
-            if action =="search":
-                
-                if np.random.random.random() <= self.beta:
-                    reward = self.r_search
-                    new_state = self.high
-                else:
-                    reward = -3
-                    new_state= self.low
-            elif action == "wait":
-                new_state = self.low
-                reward = self.r_wait
-            elif action == "recharge":
-                new_state = self.high
-                reward = 0
-                
-    def reset():
-        self.player.reset()
-                
-                
-            
-        
-                
-            
-                    
-                
+        if i % print_every_n == 0:
+            print(f'\rEpoch {i} de {epochs} concluída. Recompensa: {episode_reward} | high={player.estimations[Game.high]:.4f}, low={player.estimations[Game.low]:.4f}', end='', flush=True)
+
+    with open('rewards.txt', 'w') as f:
+        for i, reward in enumerate(total_rewards, 1):
+            f.write(f'Epoch {i}: {reward}\n')
+    
+    return player, total_rewards
+
+def main():
+    EPOCHS = 10000
+    STEPS_PER_EPOCH = 1000
+    R_SEARCH = 5
+    R_WAIT = 1
+    ALPHA = 0.7
+    BETA = 0.6
+
+    print("Iniciando treinamento do Robô de Reciclagem...")
+    print(f"Parâmetros: R_search={R_SEARCH}, R_wait={R_WAIT}, alpha={ALPHA}, beta={BETA}")
+    print(f"Épocas: {EPOCHS}, Passos por época: {STEPS_PER_EPOCH}")
+    print("-" * 60)
+    
+    player, total_rewards = train(
+        epochs=EPOCHS, 
+        steps_per_epoch=STEPS_PER_EPOCH,
+        r_search=R_SEARCH,
+        r_wait=R_WAIT,
+        alpha=ALPHA,
+        beta=BETA
+    )
+    
+    print("-" * 60)
+    print("\nTreinamento concluído!")
+    print(f"Recompensa média final: {np.mean(total_rewards[-1000:]):.2f}")
+    print(f"Estimativas finais - High: {player.estimations[Game.high]:.4f}, Low: {player.estimations[Game.low]:.4f}")
+    
+    # Plotar gráficos
+    print("\nGerando gráficos...")
+    plot_rewards(total_rewards)
+    plot_policy_heatmap(player)
+    
+    print("Arquivos salvos:")
+    print("- rewards.txt: Recompensas de cada época")
+    print("- rewards_plot.png: Gráfico das recompensas")
+    print("- policy_heatmap.png: Heatmap da política ótima")
+    
+if __name__ == '__main__':
+    main()
