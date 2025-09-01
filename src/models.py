@@ -46,8 +46,13 @@ class Game():
     
     def __init__(self, player,  r_search: float, r_wait: float, alpha: float, beta: float):
         
+        if r_search <= r_wait:
+            raise ValueError("Valores de recompensa inválidos. Deve-se respeitar  r_search > r_wait")
+        
+        if not (0 <= alpha <= 1 and 0 <= beta <= 1):
+            raise ValueError("As probabilidades alpha e beta devem estar no intervalo [0, 1].")
+
         self.player = player # só tem um jogador 
-        # Invariante: r_search > r_wait
         self.r_search = r_search
         self.r_wait = r_wait
         self.alpha = alpha
@@ -72,8 +77,8 @@ class Game():
         
         if state not in [self.low, self.high]:
             raise ValueError("Estado inválido!") 
-        if  action not in [self.wait, self.recharge, self.search]:
-            raise ValueError("Ação inválida!")
+        if  action not in self.next_possible_actions:
+            raise ValueError(f"A ação '{action.name}' não é permitida no estado '{state.name}'.")
         
         new_state = None
         reward = 0
