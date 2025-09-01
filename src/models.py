@@ -97,7 +97,32 @@ class Game():
             new_state = self.low
             reward = 0
         return new_state, reward
-                
+    
+    def next_possible_actions(self, state: State)-> list[Action]:
+        """Retorna as ações possiveis dado o estado atual
+
+        Args:
+            state (State): estado atual
+
+        Returns:
+            list[Action]: Lista com as ações possiveis
+        """
+        possible_actions = []
+        
+        # Se a bateria estiver cheia, pode procurar ou esperar
+        if state == self.high:
+            
+            possible_actions.append(self.search)
+            possible_actions.append(self.wait)
+        
+        # Se a bateria estiver baixa, pode procurar,  esperar ou recarregar
+        elif state== self.low:
+            possible_actions.append(self.search)
+            possible_actions.append(self.recharge)
+            possible_actions.append(self.wait)
+        
+        return possible_actions 
+        
 class Player:
 
     def __init__(self, step_size = 0.1, epsilon = 0.1, gamma = 0.9):
