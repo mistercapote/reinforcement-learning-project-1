@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.colors import ListedColormap
 import pandas as pd
-from models import Game
+from models import *
 
 def plot_rewards(total_rewards, window_size=100):
     """Plota as recompensas totais ao longo das épocas"""
@@ -34,9 +34,9 @@ def plot_rewards(total_rewards, window_size=100):
     plt.savefig('rewards_plot.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def plot_policy_heatmap(player):
+def plot_policy_heatmap(player, env_params):
     """Plota a política ótima como heatmap"""
-    policy = player.get_policy()
+    policy = player.get_policy(env_params)
     
     # Preparar dados para o heatmap
     states = ['High Battery', 'Low Battery']
