@@ -37,9 +37,7 @@ class State:
         return self.actions
     
 class Game():
-    # Não tem como finalizar o jogo, só acaba quando terminam as epochs
-    # r_search > r_wait
-    # Tanto faz se ele encontrar ou não na busca, ele recebe a recompensa  de r_wait 
+    
     search = Action('search')
     wait = Action('wait')
     recharge = Action('recharge')
@@ -47,23 +45,38 @@ class Game():
     low = State(0, search, wait, recharge)
     
     def __init__(self, player,  r_search: float, r_wait: float, alpha: float, beta: float):
+        
         self.player = player # só tem um jogador 
+        # Invariante: r_search > r_wait
         self.r_search = r_search
         self.r_wait = r_wait
         self.alpha = alpha
         self.beta = beta
         
     def reset(self):
+        """Reseta a bateria e estados do jogador (robozinho) para situação inicial 
+        """
         self.player.reset()
     
-    def transition(self, state: State, action: Action) -> tuple[State, int]:  
+    def transition(self, state: State, action: Action) -> tuple[State, int]:
+        """Realiza a ação  atualiza o estado do jogador (robozinho).
+        Não tem como finalizar o jogo, só acaba quando terminam as epochs
+
+        Args:
+            state (State): estado atual da bateria do player (robozinho)
+            action (Action): ação atual do player
+
+        Returns:
+            tuple[State, int]: o novo estado e a recompensa da ação
+        """
         new_state = None
-        reward = 0 # 5 se for busca e 3 se esperar
+        reward = 0
         # Se ele busca
         if action == self.search:
             reward = self.r_search
             # Se ta com bateria alta
             if state == self.high:
+                # Tanto faz se ele encontrar ou não na busca, ele recebe a recompensa  de r_wait  
                 if np.random.rand() < self.alpha: 
                     new_state = self.high
                 else: 
