@@ -3,20 +3,21 @@ from models import *
 from plot import *
 
 def train(epochs, steps_per_epoch, r_search, r_wait, alpha, beta, print_every_n=1000):
-    player = Player(step_size=0.1, epsilon=0.1)
+    player = Player(step_size=0.1, epsilon=0.1, gamma=0.9)
     game = Game(player, r_search, r_wait, alpha, beta)
+    env_params = {"alpha": alpha, "beta": beta, "r_wait": r_wait, "r_search": r_search}
     total_rewards = []
     
     for i in range(1, epochs+1):
         player.reset()
         current_state = Game.high
-        player.add_state(current_state)
         episode_reward = 0
         
         for _ in range(steps_per_epoch):
-            new_state, reward = game.transition(current_state, player.set_action())
-            player.add_state(new_state)
-            player.backup(reward, new_state)
+            possible_actions = game.next_possible_actions(current_state)
+            next_action = player.act(current_state, possible_actions, env_params)
+            new_state, reward = game.transition(current_state, next_action)
+            player.update(current_state, reward, new_state)
             episode_reward += reward
             current_state = new_state
             
@@ -39,6 +40,8 @@ def main():
     ALPHA = 0.7
     BETA = 0.6
 
+    env_params = {"alpha": ALPHA, "beta": BETA, "r_wait": R_WAIT, "r_search": R_SEARCH}
+    
     print("Iniciando treinamento do Robô de Reciclagem...")
     print(f"Parâmetros: R_search={R_SEARCH}, R_wait={R_WAIT}, alpha={ALPHA}, beta={BETA}")
     print(f"Épocas: {EPOCHS}, Passos por época: {STEPS_PER_EPOCH}")
@@ -61,7 +64,7 @@ def main():
     # Plotar gráficos
     print("\nGerando gráficos...")
     plot_rewards(total_rewards)
-    plot_policy_heatmap(player)
+    plot_policy_heatmap(player, env_params)
     
     print("Arquivos salvos:")
     print("- rewards.txt: Recompensas de cada época")

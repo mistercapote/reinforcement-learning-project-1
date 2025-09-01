@@ -106,7 +106,7 @@ class Game():
             reward = self.r_wait
         # Se ele recarrega
         elif action == self.recharge:
-            new_state = self.low
+            new_state = self.high
             reward = 0
         return new_state, reward
     
@@ -132,7 +132,7 @@ class Game():
             possible_actions.append(self.recharge)
         
         return possible_actions 
-        
+   
 class Player:
 
     def __init__(self, step_size = 0.1, epsilon = 0.1, gamma = 0.9):
@@ -140,6 +140,10 @@ class Player:
         self.step_size = step_size
         self.epsilon = epsilon
         self.gamma = gamma
+        self.was_greedy = False
+
+        
+    def reset(self):
         self.was_greedy = False
 
     # Using the temporal difference method of the tic tac toe example, we'll update the estimations of a state if the decision made is a greedy one, i. e., it wasn't made at random
@@ -151,16 +155,17 @@ class Player:
         beta = env_params['beta']
         r_search = env_params['r_search']
         r_wait = env_params['r_wait']
+    
 
         # Return the value depending on wich action and state we're in
         if state == Game.high:
             if action == Game.search:
-                return (alpha*(r_search + self.gamma * high) + (1-alpha)*(r_search + self.gamma * low))
+                return (alpha * (r_search + self.gamma * high) + (1-alpha)*(r_search + self.gamma * low))
             elif action == Game.wait:
                 return r_wait + self.gamma * high
         elif state == Game.low:
             if action == Game.search:
-                return (beta*(r_search + self.gama * low) + (1-beta)(-3 + self.gamma*high))
+                return (beta * (r_search + self.gamma * low) + (1-beta)*(-3 + self.gamma * high))
             elif action == Game.wait:
                 return (r_wait + self.gamma * low)
             elif action == Game.recharge:
@@ -183,4 +188,25 @@ class Player:
         
         current_estimation = self.estimations.get(state, 0.5)
         next_estimation = self.estimations.get(next_state, 0.5)
-        self.estimations[state] += self.step_size*(reward + self.gamma*next_estimation - current_estimation)
+        self.estimations[state] += self.step_size * (reward + self.gamma * next_estimation - current_estimation)
+
+    def get_policy(self, env_params):
+        policy = {Game.high: {}, Game.low: {}}
+        
+        for state in [Game.high, Game.low]:
+            possible_actions = state.get_actions()
+            
+            # Expected values of each action
+            values = {action: self.backup(state, action, env_params) for action in possible_actions}
+            best_value = max(values.values())
+            best_actions = [a for a, v in values.items() if v == best_value]
+            
+            # epsilon-greedy policy
+            for action in possible_actions:
+                if action in best_actions:
+                    prob = (1 - self.epsilon) / len(best_actions) + self.epsilon / len(possible_actions)
+                else:
+                    prob = self.epsilon / len(possible_actions)
+                policy[state][action] = prob
+        
+        return policy
