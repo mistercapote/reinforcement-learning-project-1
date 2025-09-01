@@ -137,4 +137,15 @@ class Player:
             self.was_greedy = False
             return np.random.choice(possible_actions)
         
+        values = {action: self.backup(state, action, env_params) for action in possible_actions}
+        highest_value = max(values, key=values.get)
+        self.was_greedy = True
+        return highest_value
+    
+    def update(self, state, reward, next_state):
+        if self.was_greedy == False:
+            return
         
+        current_estimation = self.estimations.get(state, 0.5)
+        next_estimation = self.estimations.get(next_state, 0.5)
+        self.estimations[state] += self.step_size*(reward + self.gamma*next_estimation - current_estimation)
