@@ -99,65 +99,42 @@ class Game():
         return new_state, reward
                 
 class Player:
-    def __init__(self, step_size: float, epsilon: float):
-        self.estimations = dict()
+
+    def __init__(self, step_size = 0.1, epsilon = 0.1, gamma = 0.9):
+        self.estimations = {Game.high: 0.5, Game.low: 0.5}
         self.step_size = step_size
         self.epsilon = epsilon
-        self.states = []
-        self.greedy = []
-        self.estimations[Game.high] = 0.5
-        self.estimations[Game.low] = 0.5
-        self.action_counts = {
-            Game.high: {Game.search: 0, Game.wait: 0},
-            Game.low: {Game.search: 0, Game.wait: 0, Game.recharge: 0}
-        }
-        
-    def reset(self):
-        self.states = []
-        self.greedy = []
+        self.gamma = gamma
+        self.was_greedy = False
 
-    def add_state(self, state: State):
-        self.states.append(state)
+    # Using the temporal difference method of the tic tac toe example, we'll update the estimations of a state if the decision made is a greedy one, i. e., it wasn't made at random
+    def backup(self, state, action, env_params):
+        high = self.estimations.get(Game.high, 0.5)
+        low = self.estimations.get(Game.low, 0.5)
 
-        
-    def backup(self, reward: int, new_state: State):
-        if len(self.states) < 2:
-            return  # Não há estado anterior para fazer backup
-        td_error = reward + self.estimations[new_state] - self.estimations[self.states[-2]]
-        self.estimations[self.states[-2]] += self.step_size * td_error
+        alpha = env_params['alpha']
+        beta = env_params['beta']
+        r_search = env_params['r_search']
+        r_wait = env_params['r_wait']
 
-    def set_action(self) -> Action:
-        state = self.states[-1]
-        actions = state.get_actions()
-        
-        if np.random.rand() < self.epsilon:
-            action = np.random.choice(actions)
-        else:
-            values = []
-            for a in actions:
-                if a == Game.search:
-                    value = max(self.estimations[Game.high], self.estimations[Game.low])
-                    values.append((value, a))
-                elif a == Game.wait:
-                    value = self.estimations[state]
-                    values.append((value, a))
-                elif a == Game.recharge:
-                    value = self.estimations[Game.high]
-                    values.append((value, a))
-                
-            values.sort(key=lambda x: x[0], reverse=True)
-            action = values[0][1]
+        # Return the value depending on wich action and state we're in
+        if state == Game.high:
+            if action == Game.search:
+                return (alpha*(r_search + self.gamma * high) + (1-alpha)*(r_search + self.gamma * low))
+            elif action == Game.wait:
+                return r_wait + self.gamma * high
+        elif state == Game.low:
+            if action == Game.search:
+                return (beta*(r_search + self.gama * low) + (1-beta)(-3 + self.gamma*high))
+            elif action == Game.wait:
+                return (r_wait + self.gamma * low)
+            elif action == Game.recharge:
+                return (0 + self.gamma * high)
             
-        self.action_counts[state][action] += 1
-        return action
-    
-    def get_policy(self):
-        """Retorna a política ótima baseada nas estatísticas"""
-        policy = {}
-        for state in [Game.high, Game.low]:
-            total = sum(self.action_counts[state].values())
-            if total > 0:
-                policy[state] = {action: count/total for action, count in self.action_counts[state].items()}
-            else:
-                policy[state] = {action: 0 for action in self.action_counts[state].keys()}
-        return policy
+    def act(self, state, possible_actions, env_params):
+
+        if np.random.rand() < self.epsilon:
+            self.was_greedy = False
+            return np.random.choice(possible_actions)
+        
+        
