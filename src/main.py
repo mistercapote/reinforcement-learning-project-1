@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class State():
     def __init__(self):
         pass
@@ -11,6 +10,15 @@ class Game():
     #  r_search > r_wait
     # Tanto faz se ele encontrar ou não na busca, ele recebe a recompensa  de r_wait 
     def __init__(self,player,  r_search: float, r_wait: float, alpha: float, beta:float):
+        """Inicalizada o jogo
+
+        Args:
+            player (Player): Jogador (roô)
+            r_search (float): recompensa por buscar
+            r_wait (float): recompensa por esperar
+            alpha (float): probabilidade da bateria permanecer high depois da busca
+            beta (float):  probabilidade da bateria permanecer low depois da busca
+        """
         self.player = player # só tem um jogador 
         self.r_search = r_search
         self.r_wait = r_wait
@@ -20,11 +28,12 @@ class Game():
         self.low = State(0)
         
     def reset(self):
+        """Resetando o jogo
+        """
         self.player.reset()
         
-        
     
-    def transition(self, state, action ):
+    def transition(self, state, action):
         # Vai ser 1 se tiver high 0 se tiver low
         
         new_state = None
@@ -52,18 +61,20 @@ class Game():
                 
                 if np.random.random.random() <= self.beta:
                     reward = self.r_search
-                    new_state = self.high
+                    new_state = self.low
                 else:
                     reward = -3
-                    new_state= self.low
+                    new_state= self.high
             elif action == "wait":
                 new_state = self.low
                 reward = self.r_wait
             elif action == "recharge":
                 new_state = self.high
                 reward = 0
+        
+        return new_state, reward
                 
-    def reset():
+    def reset(self):
         self.player.reset()
                 
                 
