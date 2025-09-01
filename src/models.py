@@ -77,7 +77,7 @@ class Game():
         
         if state not in [self.low, self.high]:
             raise ValueError("Estado inválido!") 
-        if  action not in self.next_possible_actions:
+        if  action not in self.next_possible_actions(state):
             raise ValueError(f"A ação '{action.name}' não é permitida no estado '{state.name}'.")
         
         new_state = None
@@ -88,7 +88,7 @@ class Game():
             reward = self.r_search
             # Se ta com bateria alta
             if state == self.high:
-                # Tanto faz se ele encontrar ou não na busca, ele recebe a recompensa  de r_wait  
+                # Tanto faz se ele encontrar ou não na busca, ele recebe a recompensa de r_wait  
                 if np.random.rand() < self.alpha: 
                     new_state = self.high
                 else: 
@@ -147,7 +147,7 @@ class Player:
         self.was_greedy = False
 
     # Using the temporal difference method of the tic tac toe example, we'll update the estimations of a state if the decision made is a greedy one, i. e., it wasn't made at random
-    def backup(self, state, action, env_params):
+    def backup(self, state: State, action: Action, env_params):
         high = self.estimations.get(Game.high, 0.5)
         low = self.estimations.get(Game.low, 0.5)
 
@@ -171,7 +171,7 @@ class Player:
             elif action == Game.recharge:
                 return (0 + self.gamma * high)
             
-    def act(self, state, possible_actions, env_params):
+    def act(self, state:State, possible_actions: list, env_params):
 
         if np.random.rand() < self.epsilon:
             self.was_greedy = False
