@@ -71,13 +71,33 @@ Modularizamos o código em três arquivos: `main.py`, `models.py` e `plot.py`
 
 - `Action`: identifica ação por `name`;
 - `State`: identifica estado por `charge_level` e lista as `Action` permitidas por estado;
-- `Player`: o robô de reciclagem. Possui os métodos `reset()` para voltar ao estado inicial, `act()` para selecionar a melhor ação a ser tomada naquele momento, `update()` para atualizar os estimadores (somente se a ação foi *greedy*) e `get_policy()` para...
+- `Player`: o robô de reciclagem. Possui os métodos `reset()` para voltar ao estado inicial, `act()` para selecionar a melhor ação a ser tomada naquele momento, `update()` para atualizar os estimadores (somente se a ação foi *greedy*) e `get_policy()` para retornar o dicionário com as probabilidades de cada ação em cada estado;
 - `Game`: ambiente com dinâmica (α, β, recompensas). Possui os métodos `transition()` que calcula a recompensa da ação do jogador em um passo da época e `backup()` que usa o método de diferença temporal para calcular a pontuação de cada ação.
 
 **plot.py** - Arquivo para plotagem dos gráficos, onde estão as funções `plot_rewards` que plota a série temporal e o histograma de recompensas por época e `plot_policy_heatmap` que calcula política ε-greedy e plota heatmap por
 estado/ação.
 
 ## 3. Implementação do Algortimo
+
+Para treinar o modelo, usamos a lógica do exemplo Tic-Tac-Toe. Nele, empregamos o algoritmo de Temporal Difference (TD), porém, ao contrário do jogo da velha, o exemplo que temos aqui não possui um fim bem definido, a simulação acaba após um número específico de passos. Então, ao invés de fazê-lo aprender após o fim da simulação, resolvemos implementar o algoritmo TD(0), ou one-step TD, que atualiza os valores estimados imediatamente após cada transição de estado, sem precisar esperar o fim da simulação. O incremento em $V(S_t)$ é feito com a fórmula abaixo:
+
+$$
+V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)]
+$$
+
+Além disso, para que o algoritmo consiga decidir qual a melhor ação a se tomar dado um estado, também utilizamos a política $\epsilon$-greedy, assim, o modelo não realiza apenas só uma ação, mas consegue explorar outros métodos numa frequência pequena, mesmo que não sejam os melhores naquele momento. Porém, como são ações feitas de forma aleatória, elas não são consideradas na atualização do $V(S_t)$. 
+Quando uma ação feita pelo robô é gananciosa - ou seja, não é aleatória - ele escolhe a ação que maximiza o valor esperado calculado pelo backup de 1 passo usando a fórmula abaixo para calcular o valor esperado de cada ação:
+
+$$
+q(s,a) = \mathbb{E}[R_{t+1} + \gamma V(S_{t+1}) | S_t = s, A_t = a]
+$$
+
+Assim, o robô avalia todas as ações possíveis em cada estado e executa aquela com maior $q(s,a)$, exceto quando decide explorar.
+
+
+Por fim, para armazenar a política ótima e plotá-la no fim do treinamento, implementamos um método ```get_policy```, que cria um dicionário de probabilidades sobre as ações. Como estamos usando a política $\epsilon$-greedy, as probabilidades são:
+- Ação ótima: $1 - \epsilon + \frac{\epsilon}{|A(s)|}$
+- Demais: $\frac{\epsilon}{|A(s)|}$
 
 ## 4. Análise dos Resultados
 

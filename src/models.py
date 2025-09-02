@@ -54,6 +54,7 @@ class Player:
             self.was_greedy = False
             return np.random.choice(self.state.get_actions())
         
+        # Using the temporal difference method of the tic tac toe example, we'll update the estimations of a state if the decision made is a greedy one, i. e., it wasn't made at random
         values = {action: backup(self, self.state, action) for action in self.state.get_actions()}
         highest_value = max(values, key=values.get)
         self.was_greedy = True
@@ -157,7 +158,6 @@ class Game():
         player.update(next_state, reward)
         return reward
     
-    # Using the temporal difference method of the tic tac toe example, we'll update the estimations of a state if the decision made is a greedy one, i. e., it wasn't made at random
     def backup(self, player: Player, state: State, action: Action):
         high = player.estimations.get(self.high, 0.5)
         low = player.estimations.get(self.low, 0.5)
