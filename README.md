@@ -101,6 +101,14 @@ Por fim, para armazenar a política ótima e plotá-la no fim do treinamento, im
 
 ## 4. Análise dos Resultados
 
+Treinamos o modelo com os seguintes parâmetros:
+* **`epochs`**: 1000
+* **`steps_per_epoch`**: 1000
+* **`α`**: 0.4
+* **`β`**: 0.3
+* **`r_search`**: 5
+* **`r_wait`**: 1
+
 Após o treinamento são gerados os arquivos:
 - `rewards.txt`: histórico de recompensa total por época;
 - `rewards.png`: gráfico de linhas de recompensas por época
