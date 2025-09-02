@@ -22,6 +22,7 @@ def train(epochs: int, steps_per_epoch: int, r_search: float, r_wait: float, alp
     return player, game, total_rewards
 
 def main():
+    np.random.seed(42)
     EPOCHS = 10000
     STEPS_PER_EPOCH = 1000
     R_SEARCH = 5

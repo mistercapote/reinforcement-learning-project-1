@@ -124,7 +124,7 @@ class Game():
         if state not in [self.low, self.high]:
             raise ValueError("Estado inválido!") 
         if  action not in state.get_actions():
-            raise ValueError(f"A ação '{action.name}' não é permitida no estado '{state.name}'.")
+            raise ValueError(f"A ação '{action}' não é permitida no estado '{state}'.")
         
         next_state = None
         reward = 0
