@@ -5,38 +5,32 @@ from matplotlib.colors import ListedColormap
 import pandas as pd
 from models import *
 
-def plot_rewards(total_rewards: list[int], window_size: int = 100):
-    """Plota as recompensas totais ao longo das épocas"""
+def plot_rewards(total_rewards: list[int]) -> None:
     plt.figure(figsize=(12, 6))
-    
-    # Recompensas brutas
-    plt.subplot(1, 2, 1)
-    plt.plot(total_rewards, alpha=0.3, label='Recompensa por época')
-    
-    # Média móvel para suavizar
-    moving_avg = np.convolve(total_rewards, np.ones(window_size)/window_size, mode='valid')
-    plt.plot(range(window_size-1, len(total_rewards)), moving_avg, 'r-', label=f'Média móvel')
+    plt.plot(total_rewards, label='Recompensa por época')
     plt.xlabel('Época')
     plt.ylabel('Recompensa Total')
     plt.title('Recompensas ao Longo do Treinamento')
     plt.legend()
     plt.grid(True, alpha=0.3)
-    
-    # Histograma das recompensas
-    plt.subplot(1, 2, 2)
+    plt.tight_layout()
+    plt.savefig("rewards.png")
+    plt.close()
+
+def plot_histogram(total_rewards: list[int]):
+    plt.figure(figsize=(12, 6))
     plt.hist(total_rewards, bins=50, alpha=0.7, edgecolor='black')
     plt.xlabel('Recompensa Total')
     plt.ylabel('Frequência')
     plt.title('Distribuição das Recompensas')
     plt.grid(True, alpha=0.3)
-    
     plt.tight_layout()
-    plt.savefig('rewards_plot.png', dpi=300, bbox_inches='tight')
+    plt.savefig('histogram.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def plot_policy_heatmap(player: Player, backup):
+def plot_policy_heatmap(player: Player, game: Game):
     """Plota a política ótima como heatmap"""
-    policy = player.get_policy(backup)
+    policy = player.get_policy(game)
     
     # Preparar dados para o heatmap
     states = ['High Battery', 'Low Battery']
@@ -68,7 +62,7 @@ def plot_policy_heatmap(player: Player, backup):
     
     plt.tight_layout()
     plt.savefig('policy_heatmap.png', dpi=300, bbox_inches='tight')
-    plt.show()
+    plt.close()
     
     # Imprimir política em formato de tabela
     print("\nPolítica Ótima:")

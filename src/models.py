@@ -129,7 +129,7 @@ class Player:
         self.was_greedy = False
         self.state = Game.high
     
-    def act(self, backup):
+    def act(self, game):
         """Escolhe uma ação com base na política epsilon-greedy.
 
         Com probabilidade `epsilon`, escolhe uma ação aleatória dentre as
@@ -148,7 +148,7 @@ class Player:
             self.was_greedy = False
             return np.random.choice(self.state.get_actions())
         
-        values = {action: backup(self, self.state, action) for action in self.state.get_actions()}
+        values = {action: self.backup(game, self.state, action) for action in self.state.get_actions()}
         highest_value = max(values, key=values.get)
         self.was_greedy = True
         return highest_value
@@ -171,15 +171,45 @@ class Player:
         next_estimation = self.estimations.get(next_state, 0.5)
         self.estimations[self.state] += self.step_size * (reward + self.gamma * next_estimation - current_estimation)
         self.state = next_state
+    
+    def backup(self, game, state: State, action: Action)-> float:
+        """Ela aplica a Equação de Bellman para obter uma estimativa do retorno esperado.
 
-    def get_policy(self, backup):
+        Args:
+            player (Player): jogador (robozinho)
+            state (State): estado atual
+            action (Action): ação
+
+        Returns:
+            float: Retorna quão boa é aquela ação naquele estado.
+        """
+        high = self.estimations.get(Game.high, 0.5)
+        low = self.estimations.get(Game.low, 0.5)
+        
+        # Return the value depending on wich action and state we're in
+        if state == Game.high:
+            if action == Game.search:
+                return (game.alpha * (game.r_search + self.gamma * high) + (1-game.alpha)*(game.r_search + self.gamma * low))
+            elif action == Game.wait:
+                return game.r_wait + self.gamma * high
+        elif state == Game.low:
+            if action == Game.search:
+                return (game.beta * (game.r_search + self.gamma * low) + (1-game.beta)*(-3 + self.gamma * high))
+            elif action == Game.wait:
+                return (game.r_wait + self.gamma * low)
+            elif action == Game.recharge:
+                return (0 + self.gamma * high)
+            
+
+            
+    def get_policy(self, game):
         policy = {Game.high: {}, Game.low: {}}
         
         for state in [Game.high, Game.low]:
             possible_actions = state.get_actions()
             
             # Expected values of each action
-            values = {action: backup(self, state, action) for action in possible_actions}
+            values = {action: self.backup(game, state, action) for action in possible_actions}
             best_value = max(values.values())
             best_actions = [a for a, v in values.items() if v == best_value]
             
@@ -235,7 +265,7 @@ class Game():
             tuple[State, int]: o novo estado e a recompensa da ação
         """
         state = player.state 
-        action = player.act(self.backup)
+        action = player.act(self)
         
         if state not in [self.low, self.high]:
             raise ValueError("Estado inválido!") 
@@ -273,33 +303,4 @@ class Game():
         player.update(next_state, reward)
         return reward
     
-    def backup(self, player: Player, state: State, action: Action)-> float:
-        """Ela aplica a Equação de Bellman para obter uma estimativa do retorno esperado.
-
-        Args:
-            player (Player): jogador (robozinho)
-            state (State): estado atual
-            action (Action): ação
-
-        Returns:
-            float: Retorna quão boa é aquela ação naquele estado.
-        """
-        high = player.estimations.get(self.high, 0.5)
-        low = player.estimations.get(self.low, 0.5)
-        
-        # Return the value depending on wich action and state we're in
-        if state == self.high:
-            if action == self.search:
-                return (self.alpha * (self.r_search + player.gamma * high) + (1-self.alpha)*(self.r_search + player.gamma * low))
-            elif action == self.wait:
-                return self.r_wait + player.gamma * high
-        elif state == self.low:
-            if action == self.search:
-                return (self.beta * (self.r_search + player.gamma * low) + (1-self.beta)*(-3 + player.gamma * high))
-            elif action == self.wait:
-                return (self.r_wait + player.gamma * low)
-            elif action == self.recharge:
-                return (0 + player.gamma * high)
-            
-
-            
+    

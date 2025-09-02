@@ -12,7 +12,7 @@ def train(epochs: int, steps_per_epoch: int, r_search: float, r_wait: float, alp
         episode_reward = sum(game.transition(player) for _ in range(steps_per_epoch))            
         total_rewards.append(episode_reward)
         
-        if i % 100:
+        if i % 100 == 0:
             print(f'\rEpoch {i} de {epochs} concluída. Recompensa: {episode_reward} | high={player.estimations[Game.high]:.4f}, low={player.estimations[Game.low]:.4f}', end='', flush=True)
 
     with open('rewards.txt', 'w') as f:
@@ -23,10 +23,10 @@ def train(epochs: int, steps_per_epoch: int, r_search: float, r_wait: float, alp
 
 def main():
     np.random.seed(42)
-    EPOCHS = 10000
+    EPOCHS = 1000
     STEPS_PER_EPOCH = 1000
     R_SEARCH = 5
-    R_WAIT = 1
+    R_WAIT = 2
     ALPHA = 0.7
     BETA = 0.6
     
@@ -52,7 +52,7 @@ def main():
     # Plotar gráficos
     print("\nGerando gráficos...")
     plot_rewards(total_rewards)
-    plot_policy_heatmap(player, game.backup)
+    plot_policy_heatmap(player, game)
     
     print("Arquivos salvos:")
     print("- rewards.txt: Recompensas de cada época")
