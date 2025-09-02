@@ -26,9 +26,9 @@ def main():
     EPOCHS = 1000
     STEPS_PER_EPOCH = 1000
     R_SEARCH = 5
-    R_WAIT = 2
-    ALPHA = 0.7
-    BETA = 0.6
+    R_WAIT = 1
+    ALPHA = 0.4
+    BETA = 0.3
     
     print("Iniciando treinamento do Robô de Reciclagem...")
     print(f"Parâmetros: R_search={R_SEARCH}, R_wait={R_WAIT}, alpha={ALPHA}, beta={BETA}")

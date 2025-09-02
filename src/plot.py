@@ -6,6 +6,7 @@ import pandas as pd
 from models import *
 
 def plot_rewards(total_rewards: list[int]) -> None:
+    """Plota grafico de linha de recompensa por época"""
     plt.figure(figsize=(12, 6))
     plt.plot(total_rewards, label='Recompensa por época')
     plt.xlabel('Época')
@@ -16,17 +17,6 @@ def plot_rewards(total_rewards: list[int]) -> None:
     plt.tight_layout()
     plt.savefig("rewards.png")
     plt.close()
-
-def plot_histogram(total_rewards: list[int]):
-    plt.figure(figsize=(12, 6))
-    plt.hist(total_rewards, bins=50, alpha=0.7, edgecolor='black')
-    plt.xlabel('Recompensa Total')
-    plt.ylabel('Frequência')
-    plt.title('Distribuição das Recompensas')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig('histogram.png', dpi=300, bbox_inches='tight')
-    plt.show()
 
 def plot_policy_heatmap(player: Player, game: Game):
     """Plota a política ótima como heatmap"""

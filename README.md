@@ -4,7 +4,7 @@
 
 Este relatório descreve a implementação de um algoritmo de Aprendizado por Reforço, baseado em *Temporal Difference* (TD), para resolver o problema do Robô de Reciclagem, (Ex. 3.3 de Sutton & Barto - "Reinforcement Learning: An Introduction"). 
 
-O agente aprende valores de estado e age com política *ε-greedy* com *one-step lookahead* usando o modelo conhecido (α, β e recompensas) para escolher ações. O objetivo é **maximizar a recompensa média** em uma tarefa contínua (desconto γ).
+O agente aprende valores de estado e age com política *ε-greedy* com *one-step lookahead* usando o modelo conhecido (α, β e recompensas) para escolher ações. O objetivo é **maximizar a recompensa média** em uma tarefa contínua.
 
 
 ## Equipe
@@ -71,10 +71,10 @@ Modularizamos o código em três arquivos: `main.py`, `models.py` e `plot.py`
 
 - `Action`: identifica ação por `name`;
 - `State`: identifica estado por `charge_level` e lista as `Action` permitidas por estado;
-- `Player`: o robô de reciclagem. Possui os métodos `reset()` para voltar ao estado inicial, `act()` para selecionar a melhor ação a ser tomada naquele momento, `update()` para atualizar os estimadores (somente se a ação foi *greedy*) e `get_policy()` para retornar o dicionário com as probabilidades de cada ação em cada estado;
-- `Game`: ambiente com dinâmica (α, β, recompensas). Possui os métodos `transition()` que calcula a recompensa da ação do jogador em um passo da época e `backup()` que usa o método de diferença temporal para calcular a pontuação de cada ação.
+- `Player`: o robô de reciclagem. Possui os métodos `reset()` para voltar ao estado inicial, `act()` para selecionar a melhor ação a ser tomada naquele momento, `update()` para atualizar os estimadores (somente se a ação foi *greedy*), `backup()` que usa o método de diferença temporal para calcular a pontuação de cada ação e `get_policy()` para retornar o dicionário com as probabilidades de cada ação em cada estado;
+- `Game`: ambiente com dinâmica (α, β, recompensas). Possui o método `transition()` que calcula a recompensa da ação do jogador em um passo da época.
 
-**plot.py** - Arquivo para plotagem dos gráficos, onde estão as funções `plot_rewards` que plota a série temporal e o histograma de recompensas por época e `plot_policy_heatmap` que calcula política ε-greedy e plota heatmap por
+**plot.py** - Arquivo para plotagem dos gráficos, onde estão as funções `plot_rewards` que plota a um gráfico de linha com as recompensas de cada época e `plot_policy_heatmap` que calcula política ε-greedy e plota heatmap por
 estado/ação.
 
 ## 3. Implementação do Algortimo
@@ -103,27 +103,20 @@ Por fim, para armazenar a política ótima e plotá-la no fim do treinamento, im
 
 Após o treinamento são gerados os arquivos:
 - `rewards.txt`: histórico de recompensa total por época;
-- `rewards_plot.png`: série de recompensas + média móvel e histograma;
+- `rewards.png`: gráfico de linhas de recompensas por época
 - `policy_heatmap.png`: heatmap da política ε-greedy aprendida.
 
 ### Curva de Aprendizagem
 
-O gráfico abaixo mostra a recompensa total acumulada ao final de cada época de treinamento.
+O gráfico abaixo mostra a recompensa total acumulada ao final de cada época do treinamento.
 
-![Histograma](rewards_plot.png)
+![Curva de aprendizagem](rewards.png)
 
--- explicar alguma coisa ai
+Observa-se que em poucas épocas, o robô já aprende a fazer ações que maximizam a recompensa. Assim, nas épocas seguintes fica estável num certo intervalo, especificamente para os parâmetros que escolhemos, um intervalo ao redor de 3000.
 
+### Política Ótima
 ![Heatmap](policy_heatmap.png)
 
-Interpretação qualitativa da política ótima
+No estado `high`, já que não há penalidade em nenhuma das ações possíveis nesse estado, o robô aprendeu a executar a mais lucrativa `search`.
 
-- No estado **high**, já que não há penalidade em nenhuma das ações possíveis nesse estado, o robô aprendeu a executar a mais lucrativa `search`
-- No estado **low**, embora `search` seja mais lucrativo, também possui alta penalidade, assim o robô aprendeu a executar `recharge` opção mais segura por ser sempre neutra.
-
-
-* **Pergunta-guia:** O que a política final nos diz? Qual ação o robô aprendeu a tomar no estado `high`? E no estado `low`? Essa política faz sentido intuitivamente? Por quê?
-
-## 5. Conclusão
-
-* **Pergunta-guia:** O algoritmo foi eficaz? Quais foram os maiores desafios na implementação? Que melhorias poderiam ser feitas (ex: variar os parâmetros, testar outro algoritmo)?
+No estado `low`, embora `search` seja mais lucrativo, também possui alta penalidade, assim o robô aprendeu a executar `recharge` opção mais segura por ser sempre neutra.
