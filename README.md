@@ -2,7 +2,10 @@
 
 ## Introdução
 
-Este relatório descreve a implementação de um algoritmo de Aprendizado por Reforço, baseado em *Temporal Difference* (TD), para resolver o problema do Robô de Reciclagem, conforme descrito no Exemplo 3.3 do livro "Reinforcement Learning: An Introduction" de Sutton e Barto. O objetivo do agente é aprender uma política ótima de ações para maximizar a coleta de recompensas em uma tarefa contínua.
+Este relatório descreve a implementação de um algoritmo de Aprendizado por Reforço, baseado em *Temporal Difference* (TD), para resolver o problema do Robô de Reciclagem, (Ex. 3.3 de Sutton & Barto - "Reinforcement Learning: An Introduction"). 
+
+O agente aprende valores de estado e age com política *ε-greedy* com *one-step lookahead* usando o modelo conhecido (α, β e recompensas) para escolher ações. O objetivo é **maximizar a recompensa média** em uma tarefa contínua (desconto γ).
+
 
 ## Equipe
 
@@ -20,6 +23,7 @@ Para instalar as bibliotecas necessárias, execute:
 ```bash
   pip install -r requirements.txt
 ```
+Mínimo recomendado: `numpy`, `matplotlib`, `seaborn`, `pandas`.
 
 ## 1. Descrição do Problema (MDP)
 
@@ -60,6 +64,49 @@ A tabela a seguir, adaptada do livro-texto, resume a dinâmica do ambiente com o
 
 
 ## 2. Implementação do Algoritmo
+
+### Arquitetura do código
+
+Modularizamos o código em três arquivos: `models.py`, `main.py` e `plot.py`
+
+**models.py** - Onde estão modeladas as classes `Action`, `State`, `Game` e `Player`
+
+- `Action`: identifica ação por `name`
+- `State`: identifica estado por `charge_level` e lista as `Action` permitidas por estado.
+- `Player`: o robô de reciclagem. Possui os métodos `reset()` para voltar ao estado inicial, `act()` para selecionar a melhor ação a ser tomada naquele momento, `update()` para atualizar os estimadores e `get_policy()`
+
+estimações **V(s)**, escolhe ação com *ε-greedy* a
+partir de um backup de um passo que combina recompensas imediatas, transições (α, β) e valores atuais V.\
+
+- `Game`: ambiente com dinâmica (α, β, recompensas). Possui os métodos `transition()` recebe o estado atual e a ação do jogador e retorna o novo estado e a rcompensa da ação.
+
+
+( V(s) `\leftarrow `{=tex}V(s) + lpha\_{step} ig\[r +
+`\gamma `{=tex}V(s') - V(s)ig\] )
+
+-   Observação: o *update* só ocorre se a ação foi *greedy* (seguindo
+    Sutton & Barto).
+
+**main.py** - `train(...)`: executa múltiplas épocas, cada uma com
+*steps_per_epoch* passos.\
+- `main()`: define hiperparâmetros, treina, imprime médias, e plota
+resultados via `plot.py`.
+
+**plot.py** - `plot_rewards`: série temporal + histograma de recompensas
+por época (com média móvel).\
+- `plot_policy_heatmap`: calcula política ε-greedy e plota heatmap por
+estado/ação.
+
+**Observação de projeto** - O agente aprende **V(s)** com TD(0), mas
+seleciona ações usando um backup *model-based*.\
+- Não é Q-learning nem SARSA. É um esquema híbrido (*controle por
+one-step lookahead* + avaliação TD).\
+- **Vantagem**: simplicidade e uso eficiente do modelo.\
+- **Limitação**: sem modelo conhecido, a política não poderia ser
+computada dessa forma.
+
+
+
 
 ### Loop de Aprendizagem
 

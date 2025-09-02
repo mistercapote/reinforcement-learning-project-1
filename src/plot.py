@@ -5,7 +5,7 @@ from matplotlib.colors import ListedColormap
 import pandas as pd
 from models import *
 
-def plot_rewards(total_rewards, window_size=100):
+def plot_rewards(total_rewards: list[int], window_size: int = 100):
     """Plota as recompensas totais ao longo das épocas"""
     plt.figure(figsize=(12, 6))
     
@@ -34,9 +34,9 @@ def plot_rewards(total_rewards, window_size=100):
     plt.savefig('rewards_plot.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def plot_policy_heatmap(player, env_params):
+def plot_policy_heatmap(player: Player, backup):
     """Plota a política ótima como heatmap"""
-    policy = player.get_policy(env_params)
+    policy = player.get_policy(backup)
     
     # Preparar dados para o heatmap
     states = ['High Battery', 'Low Battery']
@@ -65,8 +65,6 @@ def plot_policy_heatmap(player, env_params):
     plt.title('Política Ótima do Robô de Reciclagem\n(Probabilidade de cada ação por estado)')
     plt.xlabel('Ações')
     plt.ylabel('Estado da Bateria')
-    plt.xticks(rotation=45)
-    plt.yticks(rotation=0)
     
     plt.tight_layout()
     plt.savefig('policy_heatmap.png', dpi=300, bbox_inches='tight')
